@@ -11,13 +11,16 @@ st.set_page_config(page_title="식물공장 상추 수확량 예측 v5", layout=
 
 # 1. 구글 시트 연결 (Secrets 설정 필요)
 # 시트 주소: https://docs.google.com/spreadsheets/d/1FMxN2iS0srEZD2bQ5dlQp2-JaZaXvd24W-glJpqReuo/edit?usp=sharing
-SHEET_URL = "https://docs.google.com/spreadsheets/d/1FMxN2iS0srEZD2bQ5dlQp2-JaZaXvd24W-glJpqReuo/edit?usp=sharing"
-
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 데이터 로드 함수
-def load_data():
-    return conn.read(spreadsheet=SHEET_URL, ttl="0") # 실시간 반영을 위해 캐시(ttl)를 0으로 설정
+def load_db():
+    try:
+        # 캐시 없이 실시간 데이터를 읽어옵니다.
+        df = conn.read(ttl="0")
+        return df
+    except Exception as e:
+        st.error(f"데이터 로드 실패: {e}")
+        return pd.DataFrame()
 
 # 2. 고정 설정값 (노트북 소스 그대로 유지)
 FIXED_BED_CONFIG = {
